@@ -1,0 +1,16 @@
+sequenceDiagram
+participant browser
+participant server
+
+    Note right of browser: User creates a new note and submit it by clicking on a "Save" button
+    Note right of browser: That triggers the onLoad event listener that recives that input
+    Note right of browser: Then we prevent the default behavior, take the note and store it in our notes array
+    Note right of browser: Call a function to update our DOM tree and then we send note to the server
+
+    browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+    activate server
+
+    Note right of browser: Server responde with a status "201 Created" and with content
+
+    server-->>browser: {"message":"note created"}
+    deactivate server
