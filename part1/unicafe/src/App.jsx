@@ -26,21 +26,29 @@ const Statistics = (props) => {
 			{total === 0 ? (
 				<p>No feedback given</p>
 			) : (
-				<>
-					<StatisticsLine text="Good:" value={good} />
-					<StatisticsLine text="Neutral:" value={neutral} />
-					<StatisticsLine text="Bad:" value={bad} />
-					<StatisticsLine text="All:" value={total} />
-					<StatisticsLine text="Average:" value={calcAvgScore()} />
-					<StatisticsLine text="Positive:" value={`${calculateAvgGood()} %`} />
-				</>
+				<table>
+					<tbody>
+						<StatisticsLine text="Good:" value={good} />
+						<StatisticsLine text="Neutral:" value={neutral} />
+						<StatisticsLine text="Bad:" value={bad} />
+
+						<StatisticsLine text="All:" value={total} />
+						<StatisticsLine text="Average:" value={calcAvgScore()} />
+						<StatisticsLine text="Positive:" value={`${calculateAvgGood()} %`} />
+					</tbody>
+				</table>
 			)}
 		</div>
 	);
 };
 
 const StatisticsLine = ({ text, value }) => {
-	return <p>{`${text} ${value}`}</p>;
+	return (
+		<tr>
+			<td>{text}</td>
+			<td>{value}</td>
+		</tr>
+	);
 };
 
 const Button = ({ text, onClick }) => {
