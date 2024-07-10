@@ -5,12 +5,16 @@ import { Form } from './components/Form';
 import { Persons } from './components/Persons';
 import phoneBookService from './services/phonebook';
 import { v4 as uuidv4 } from 'uuid';
+import { Notification } from './components/Notification';
+import { useNotification } from './hooks/useNotification';
 
 const App = () => {
 	const [persons, setPersons] = useState([]);
 	const [newName, setNewName] = useState('');
 	const [newNumber, setNewNumber] = useState('');
 	const [searchName, setSearchName] = useState('');
+
+	const { message, setMessage } = useNotification();
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -20,8 +24,6 @@ const App = () => {
 			id: uuidv4()
 		};
 
-		const personExists = persons.find((person) => isEqual(person.name, newPerson.name));
-
 		const isFieldMissing = !newName.length || !newNumber.length;
 
 		if (isFieldMissing) {
@@ -29,25 +31,53 @@ const App = () => {
 			return;
 		}
 
+		const personExists = persons.find((person) => isEqual(person.name, newPerson.name));
+
 		if (personExists) {
 			if (window.confirm(`${personExists.name} is already added to phonebook, replace the old number with the new one?`)) {
-				phoneBookService.updatePerson(personExists.id, { ...personExists, number: newPerson.number }).then((res) => {
-					setPersons((prevState) => {
-						return prevState.map((person) => {
-							if (person.id === res.id) {
-								return res;
-							}
-							return person;
-						});
-					}),
+				phoneBookService
+					.updatePerson(personExists.id, { ...personExists, number: newPerson.number })
+					.then((res) => {
+						setPersons((prevState) => {
+							return prevState.map((person) => {
+								if (person.id === res.id) {
+									return res;
+								}
+								return person;
+							});
+						}),
+							setMessage({
+								text: `Updated number for ${personExists.name}`,
+								type: 'success'
+							});
 						resetInputFields();
-				});
+					})
+					.catch(() => {
+						setMessage({
+							text: `Information of ${personExists.name} has been removed from the server`,
+							type: 'error'
+						});
+						setPersons((prevState) => prevState.filter((person) => person.id !== personExists.id));
+					});
 			}
 		} else {
-			phoneBookService.createPerson(newPerson).then((person) => {
-				setPersons((prevState) => [...prevState, person]);
-				resetInputFields();
-			});
+			phoneBookService
+				.createPerson(newPerson)
+				.then((person) => {
+					setPersons((prevState) => [...prevState, person]);
+
+					setMessage({
+						text: `Added ${newPerson.name}`,
+						type: 'success'
+					});
+					resetInputFields();
+				})
+				.catch(() => {
+					setMessage({
+						text: `User ${newPerson.name} has not been added successfully`,
+						type: 'error'
+					});
+				});
 		}
 	};
 
@@ -87,6 +117,7 @@ const App = () => {
 	return (
 		<div>
 			<h2>Phonebook</h2>
+			<Notification {...message} />
 			<Filter value={searchName} onChange={handleFilterChange} />
 
 			<h3>add a new</h3>
