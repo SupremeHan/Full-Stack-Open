@@ -8,6 +8,9 @@ app.use(cors());
 app.use(express.json());
 
 const blogListRouter = require('./controllers/bloglist');
+const usersRouter = require('./controllers/users');
+
 app.use('/api/blogs', blogListRouter);
+app.use('/api/users', usersRouter);
 
 module.exports = app;
