@@ -23,13 +23,22 @@ const initialBlogs = [
 ];
 
 beforeEach(async () => {
+	await User.deleteMany({});
+
+	const passwordHash = await bcrypt.hash('salasana', 10);
+	const user = new User({ username: 'root', name: 'Master User', password: passwordHash });
+
+	await user.save();
+
+	const userForToken = {
+		username: user.username,
+		id: user.id
+	};
+	token = jwt.sign(userForToken, process.env.SECRET);
+
 	await BlogList.deleteMany({});
-
-	let blogListObject = new BlogList(initialBlogs[0]);
-	await blogListObject.save();
-
-	blogListObject = new BlogList(initialBlogs[1]);
-	await blogListObject.save();
+	blogs = initialBlogs.map((blog) => new BlogList({ ...blog, user: user.id }));
+	await BlogList.insertMany(initialBlogs);
 });
 
 test('blog list are returned as json', async () => {
