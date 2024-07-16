@@ -1,5 +1,5 @@
-const { test, after, beforeEach, describe } = require('node:test');
-const assert = require('node:assert');
+const { test, beforeEach, after } = require('node:test');
+const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
@@ -9,36 +9,61 @@ const api = supertest(app);
 
 beforeEach(async () => {
 	await User.deleteMany({});
+
+	const passwordHash = await bcrypt.hash('salasana', 10);
+	const user = new User({ username: 'root', name: 'Master User', passwordHash });
+
+	await user.save();
 });
 
-test('user with incorect password length should not be created', async () => {
+test('creating user', async () => {
 	const newUser = {
-		username: 'testest123',
-		name: 'Alex test',
-		password: '12'
+		username: 'user',
+		name: 'Stack Master',
+		password: 'ultimateHax'
 	};
 
-	await api.post('/api/users').send(newUser).expect(400);
+	await api
+		.post('/api/users')
+		.send(newUser)
+		.expect(200)
+		.expect('Content-Type', /application\/json/);
 });
 
-test('should not added users with the same username', async () => {
-	let newUser = {
-		username: 'test123',
-		name: 'test',
-		password: '12345'
+test('creation fails when username already exists', async () => {
+	const newUser = {
+		username: 'user',
+		name: 'Stack Master',
+		password: 'ultimateHax'
 	};
 
-	await api.post('/api/users').send(newUser);
+	await api
+		.post('/api/users')
+		.send(newUser)
+		.expect(200)
+		.expect('Content-Type', /application\/json/);
 
-	newUser = {
-		username: 'test123',
-		name: 'test2',
-		password: '12345565'
-	};
-
-	await api.post('/api/users').send(newUser).expect(500);
+	await api
+		.post('/api/users')
+		.send(newUser)
+		.expect(400)
+		.expect('Content-Type', /application\/json/);
 });
 
-after(async () => {
-	await mongoose.connection.close();
+test('creation fails when password too short', async () => {
+	const newUser = {
+		username: 'user',
+		name: 'Stack Master',
+		password: 'aa'
+	};
+
+	await api
+		.post('/api/users')
+		.send(newUser)
+		.expect(400)
+		.expect('Content-Type', /application\/json/);
+});
+
+after(() => {
+	mongoose.connection.close();
 });

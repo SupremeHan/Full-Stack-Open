@@ -11,9 +11,10 @@ blogListRouter.post('/', async (request, response) => {
 	if (!request.token || !request.decodedToken) {
 		return response.status(401).json({ error: 'token missing or invalid' });
 	}
+
 	const { body } = request;
 
-	const user = await User.findById(request.decodedToken);
+	const user = await User.findById(request.decodedToken.id);
 
 	if (!body.title || !body.url) {
 		return response.status(400).end();
@@ -27,18 +28,21 @@ blogListRouter.post('/', async (request, response) => {
 
 	const savedBlog = await blog.save();
 	user.blogs = user.blogs.concat(savedBlog._id);
+	await user.save();
 
 	response.status(201).json(savedBlog);
 });
 
-blogsRouter.delete('/:id', async (request, response) => {
+blogListRouter.delete('/:id', async (request, response) => {
 	if (!request.token || !request.decodedToken) {
 		return response.status(401).json({ error: 'token missing or invalid' });
 	}
+
 	try {
 		const blog = await BlogList.findById(request.params.id);
-		if (blog.user.toString() === request.decodedToken.id.toString()) {
-			await BlogList.findByIdAndRemove(request.params.id);
+
+		if (blog.user.toString() === request.decodedToken.id) {
+			await BlogList.findByIdAndDelete(request.params.id);
 			response.status(204).end();
 		} else {
 			response.status(400).end();
