@@ -46,12 +46,12 @@ beforeEach(async () => {
 });
 
 test('correct amount of blogs is returned', async () => {
-	const response = await api.get('/api/blogs');
+	const response = await api.get('/api/blogs').set('Authorization', `bearer ${token}`);
 	assert.strictEqual(response.body.length, initialBlogs.length);
 });
 
 test('a valid blog can be added ', async () => {
-	const initialResponse = await api.get('/api/blogs');
+	const initialResponse = await api.get('/api/blogs').set('Authorization', `bearer ${token}`);
 
 	const newBlog = {
 		title: 'Full Stack',
@@ -62,7 +62,7 @@ test('a valid blog can be added ', async () => {
 
 	await api.post('/api/blogs').send(newBlog).set('Authorization', `bearer ${token}`);
 
-	const response = await api.get('/api/blogs');
+	const response = await api.get('/api/blogs').set('Authorization', `bearer ${token}`);
 
 	assert.strictEqual(response.body.length, initialResponse.body.length + 1);
 });

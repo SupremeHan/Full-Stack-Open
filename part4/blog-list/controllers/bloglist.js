@@ -3,6 +3,10 @@ const BlogList = require('../models/bloglist');
 const User = require('../models/user');
 
 blogListRouter.get('/', async (request, response) => {
+	if (!request.token || !request.decodedToken) {
+		return response.status(401).json({ error: 'token missing or invalid' });
+	}
+
 	const blogs = await BlogList.find({}).populate('user', { name: 1, username: 1, _id: 1 });
 	response.json(blogs);
 });
