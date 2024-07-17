@@ -56,6 +56,7 @@ blogListRouter.put('/:id', async (request, response) => {
 	if (!request.token || !request.decodedToken) {
 		return response.status(401).json({ error: 'token missing or invalid' });
 	}
+	const { body } = request;
 
 	const blog = {
 		title: body.title,
