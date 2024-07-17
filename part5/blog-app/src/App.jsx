@@ -1,81 +1,80 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import blogService from './services/blogs';
-import loginService from './services/login';
 import { LoginForm } from './components/LoginForm';
-import { Notification } from './components/Notification';
 import { Blog } from './components/Blog';
 import { BlogForm } from './components/BlogForm';
+import Togglable from './components/Toggalabel';
 import { useNotification } from './hooks/useNotifications';
+import { Notification } from './components/Notification';
+import './App.css';
 
 function App() {
-	const [formData, setFormData] = useState({ username: '', password: '' });
 	const [user, setUser] = useState(null);
-
 	const [blogs, setBlogs] = useState([]);
-	const [newBlog, setNewBlog] = useState({
-		title: '',
-		author: '',
-		url: ''
-	});
+	const blogRef = useRef();
+
 	const { message, setMessage } = useNotification();
 
-	const handleChange = (event) => {
-		const { name, value } = event.target;
+	const createNewBlog = (newBlog) => {
+		blogService
+			.create(newBlog)
+			.then((res) => {
+				setBlogs((prevState) => [...prevState, res]);
 
-		setFormData((prevState) => ({
-			...prevState,
-			[name]: value
-		}));
+				setMessage({
+					type: 'success',
+					msg: `A new blog ${res.title} by ${res.author} added`
+				});
+
+				blogRef.current.toggleVisibility();
+			})
+			.catch(() => {
+				setMessage({
+					type: 'error',
+					msg: 'Failed to add a new blog'
+				});
+			});
 	};
 
-	const handleBlogFormChange = (event) => {
-		const { name, value } = event.target;
-
-		setNewBlog((prevState) => ({
-			...prevState,
-			[name]: value
-		}));
+	const addBlogLike = (blog) => {
+		const updatedBlog = {
+			...blog,
+			likes: blog.likes + 1
+		};
+		blogService
+			.update(updatedBlog)
+			.then((res) => {
+				setBlogs((prevState) =>
+					prevState.map((blog) => {
+						if (blog.id === res.id) {
+							return res;
+						} else {
+							return blog;
+						}
+					})
+				);
+			})
+			.catch(() => {
+				setMessage({
+					type: 'error',
+					msg: 'Failed to update likes'
+				});
+			});
 	};
 
-	const addNewBlog = async (e) => {
-		e.preventDefault();
-
-		try {
-			const blog = await blogService.create(newBlog);
-
-			setNewBlog({
-				title: '',
-				author: '',
-				url: ''
-			});
-			setMessage({
-				type: 'success',
-				msg: `A new blog ${blog.title} by ${user.name} added`
-			});
-		} catch (error) {
-			setMessage({
-				type: 'error',
-				msg: 'Failed to add a new blog'
-			});
-		}
-	};
-
-	const onSubmit = async (e) => {
-		e.preventDefault();
-
-		try {
-			const user = await loginService.login(formData);
-
-			window.localStorage.setItem('loggedUser', JSON.stringify(user));
-			blogService.setToken(user.token);
-
-			setUser(user);
-			setFormData({ username: '', password: '' });
-		} catch (error) {
-			setMessage({
-				type: 'error',
-				msg: 'Wrong credentials'
-			});
+	const removeBlog = (deletedBlog) => {
+		if (window.confirm(`Remove blog ${deletedBlog.title} by ${deletedBlog.author}`)) {
+			blogService
+				.remove(deletedBlog.id)
+				.then(() => {
+					setBlogs((prevState) => prevState.filter((blog) => blog.id !== deletedBlog.id));
+				})
+				.catch(() => {
+					setMessage({
+						type: 'error',
+						msg: 'Failed to delete blog'
+					});
+				});
 		}
 	};
 
@@ -84,10 +83,11 @@ function App() {
 	};
 
 	useEffect(() => {
-		if (user) {
-			blogService.getAll().then((res) => setBlogs(res));
-		}
-	}, [user]);
+		blogService
+			.getAll()
+			.then((res) => setBlogs(res))
+			.catch((e) => console.error(e));
+	}, []);
 
 	useEffect(() => {
 		const loggedUserJSON = window.localStorage.getItem('loggedUser');
@@ -100,23 +100,35 @@ function App() {
 
 	return (
 		<div>
-			{message ? <Notification {...message} /> : null}
 			{user ? (
-				<>
-					<p>{`${user.name} logged in`}</p>
-					<button onClick={logOut}>Logout</button>
+				<div className="blog-area">
+					<div className="user-area">
+						<p>{`${user.name} logged in`}</p>
+						<button onClick={logOut}>Logout</button>
+					</div>
 
-					<h2>Create a new blog</h2>
-					<BlogForm formData={newBlog} onChange={handleBlogFormChange} onSubmit={addNewBlog} />
+					{message ? <Notification {...message} /> : null}
 
-					{blogs.map((blog) => (
-						<Blog key={blog.id} blog={blog} />
-					))}
-				</>
+					<Togglable ref={blogRef} buttonLabel="new blog">
+						<BlogForm addBlog={createNewBlog} />
+					</Togglable>
+
+					<div className="blog-cards">
+						{blogs
+							.sort((blog1, blog2) => blog2.likes - blog1.likes)
+							.map((blog) => (
+								<div key={blog.id}>
+									<Blog blog={blog} addLike={addBlogLike} removeBlog={removeBlog} />
+								</div>
+							))}
+					</div>
+				</div>
 			) : (
 				<>
 					<h2>Login to application</h2>
-					<LoginForm formData={formData} onChange={handleChange} onSubmit={onSubmit} />
+					<Togglable buttonLabel="view">
+						<LoginForm />
+					</Togglable>
 				</>
 			)}
 		</div>

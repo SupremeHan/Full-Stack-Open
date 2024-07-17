@@ -1,0 +1,17 @@
+.blog-area {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.blog-cards {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.user-area {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}

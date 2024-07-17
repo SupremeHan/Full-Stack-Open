@@ -1,20 +1,53 @@
 /* eslint-disable react/prop-types */
-export function BlogForm({ formData, onChange, onSubmit }) {
-	return (
-		<form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-			<label>
-				Title: <input value={formData.title} type="text" onChange={onChange} name="title" />
-			</label>
-			<label>
-				Author: <input value={formData.author} type="text" onChange={onChange} name="author" />
-			</label>
-			<label>
-				Url :<input value={formData.url} type="text" onChange={onChange} name="url" />
-			</label>
+import { useState } from 'react';
+import './BlogForm.css';
 
-			<button style={{ width: '100px' }} type="submit">
-				create
-			</button>
-		</form>
+export function BlogForm({ addBlog }) {
+	const [newBlog, setNewBlog] = useState({
+		title: '',
+		author: '',
+		url: ''
+	});
+
+	const handleBlogFormChange = (event) => {
+		const { name, value } = event.target;
+
+		setNewBlog((prevState) => ({
+			...prevState,
+			[name]: value
+		}));
+	};
+
+	const addNewBlog = (e) => {
+		e.preventDefault();
+
+		addBlog(newBlog);
+
+		setNewBlog({
+			title: '',
+			author: '',
+			url: ''
+		});
+	};
+
+	return (
+		<div className="blog-wrapper">
+			<h2>Create a new blog</h2>
+			<form onSubmit={addNewBlog} className="blog-form">
+				<label>
+					Title: <input value={newBlog.title} type="text" onChange={handleBlogFormChange} name="title" />
+				</label>
+				<label>
+					Author: <input value={newBlog.author} type="text" onChange={handleBlogFormChange} name="author" />
+				</label>
+				<label>
+					Url :<input value={newBlog.url} type="text" onChange={handleBlogFormChange} name="url" />
+				</label>
+
+				<button className="blog-button" type="submit">
+					create
+				</button>
+			</form>
+		</div>
 	);
 }
