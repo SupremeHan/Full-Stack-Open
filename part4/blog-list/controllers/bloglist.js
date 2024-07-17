@@ -52,4 +52,24 @@ blogListRouter.delete('/:id', async (request, response) => {
 	}
 });
 
+blogListRouter.put('/:id', async (request, response) => {
+	if (!request.token || !request.decodedToken) {
+		return response.status(401).json({ error: 'token missing or invalid' });
+	}
+
+	const blog = {
+		title: body.title,
+		author: body.author,
+		url: body.url,
+		likes: body.likes
+	};
+
+	try {
+		const updateBlog = await BlogList.findByIdAndUpdate(request.params.id, blog, { new: true });
+		response.json(updateBlog);
+	} catch (error) {
+		response.status(400);
+	}
+});
+
 module.exports = blogListRouter;
