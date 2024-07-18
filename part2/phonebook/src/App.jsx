@@ -52,12 +52,11 @@ const App = () => {
 							});
 						resetInputFields();
 					})
-					.catch(() => {
+					.catch((err) => {
 						setMessage({
-							text: `Information of ${personExists.name} has been removed from the server`,
+							text: err.response.data.error,
 							type: 'error'
 						});
-						setPersons((prevState) => prevState.filter((person) => person.id !== personExists.id));
 					});
 			}
 		} else {
@@ -72,9 +71,9 @@ const App = () => {
 					});
 					resetInputFields();
 				})
-				.catch(() => {
+				.catch((err) => {
 					setMessage({
-						text: `User ${newPerson.name} has not been added successfully`,
+						text: err.response.data.error,
 						type: 'error'
 					});
 				});
@@ -100,9 +99,17 @@ const App = () => {
 
 	const onDelete = (id, name) => {
 		if (window.confirm(`Are you sure you want to delete ${name}`)) {
-			phoneBookService.deletePerson(id).then((res) => {
-				setPersons((prevVal) => prevVal.filter((person) => person.id !== res.id));
-			});
+			phoneBookService
+				.deletePerson(id)
+				.then((res) => {
+					setPersons((prevVal) => prevVal.filter((person) => person.id !== res.id));
+				})
+				.catch(() => {
+					setMessage({
+						text: `Error has occured, check if phonebook entry exists`,
+						type: 'error'
+					});
+				});
 		}
 	};
 
