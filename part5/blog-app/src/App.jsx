@@ -118,14 +118,13 @@ function App() {
 
 	return (
 		<div>
+			{message ? <Notification {...message} /> : null}
 			{user ? (
 				<div className="blog-area">
 					<div className="user-area">
 						<p>{`${user.name} logged in`}</p>
 						<button onClick={logOut}>Logout</button>
 					</div>
-
-					{message ? <Notification {...message} /> : null}
 
 					<Togglable ref={blogRef} buttonLabel="new blog">
 						<BlogForm addBlog={createNewBlog} />

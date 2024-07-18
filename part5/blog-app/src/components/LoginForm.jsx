@@ -22,12 +22,12 @@ export function LoginForm({ loginUser }) {
 		setFormData({ username: '', password: '' });
 	};
 	return (
-		<form onSubmit={onSubmit} className="login-form">
+		<form onSubmit={onSubmit} className="login-form" data-testid="login-form">
 			<label>
-				Username <input value={formData.username} onChange={handleChange} name="username" />
+				Username <input data-testid="username" value={formData.username} onChange={handleChange} name="username" />
 			</label>
 			<label>
-				Password <input value={formData.password} onChange={handleChange} name="password" type="password" />
+				Password <input data-testid="password" value={formData.password} onChange={handleChange} name="password" type="password" />
 			</label>
 			<button className="login-button" type="submit">
 				Login
