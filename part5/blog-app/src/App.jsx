@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import blogService from './services/blogs';
+import loginService from './services/login';
 import { LoginForm } from './components/LoginForm';
 import { Blog } from './components/Blog';
 import { BlogForm } from './components/BlogForm';
@@ -14,6 +15,22 @@ function App() {
 	const blogRef = useRef();
 
 	const { message, setMessage } = useNotification();
+
+	const login = (formData) => {
+		loginService
+			.login(formData)
+			.then((user) => {
+				window.localStorage.setItem('loggedUser', JSON.stringify(user));
+				blogService.setToken(user.token);
+				setUser(user);
+			})
+			.catch(() => {
+				setMessage({
+					type: 'error',
+					msg: 'Wrong credentials'
+				});
+			});
+	};
 
 	const createNewBlog = (newBlog) => {
 		blogService
@@ -80,6 +97,7 @@ function App() {
 
 	const logOut = () => {
 		window.localStorage.clear();
+		setUser(null);
 	};
 
 	useEffect(() => {
@@ -127,7 +145,7 @@ function App() {
 				<>
 					<h2>Login to application</h2>
 					<Togglable buttonLabel="view">
-						<LoginForm />
+						<LoginForm loginUser={login} />
 					</Togglable>
 				</>
 			)}
