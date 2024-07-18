@@ -7,7 +7,12 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-// app.use(middleware);
+app.use(middleware);
+
+if (process.env.NODE_ENV === 'test') {
+	const testingRouter = require('./controllers/testing');
+	app.use('/api/testing', testingRouter);
+}
 
 const blogListRouter = require('./controllers/bloglist');
 const usersRouter = require('./controllers/users');
