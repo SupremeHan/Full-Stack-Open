@@ -1,13 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import AnecdoteForm from './components/AnecdoteForm';
 import Notification from './components/Notification';
-import axios from 'axios';
 import { getAnecdotes, updateAnecdoteVote } from './services/requests';
+import { useNotification } from './hooks/useNotification';
+import { setNotification } from './utils/setNotificaiton';
 
 const App = () => {
 	const queryClient = useQueryClient();
+	const [_notification, notificationDispatch] = useNotification();
 
-	const { isPending, isError, data, error } = useQuery({
+	const { isPending, isError, data } = useQuery({
 		queryKey: ['anecdotes'],
 		queryFn: () => getAnecdotes()
 	});
@@ -20,6 +22,7 @@ const App = () => {
 				['anecdotes'],
 				anecdotes.map((anecdote) => (anecdote.id === updatedAnecdote.id ? updatedAnecdote : anecdote))
 			);
+			setNotification(notificationDispatch, `Anecdote '${updatedAnecdote.content}' voted`);
 		}
 	});
 
