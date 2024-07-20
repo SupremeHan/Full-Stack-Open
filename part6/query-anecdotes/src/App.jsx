@@ -9,7 +9,7 @@ const App = () => {
 	const queryClient = useQueryClient();
 	const [_notification, notificationDispatch] = useNotification();
 
-	const { isPending, isError, data } = useQuery({
+	const { isPending, isError, data, error } = useQuery({
 		queryKey: ['anecdotes'],
 		queryFn: () => getAnecdotes()
 	});
