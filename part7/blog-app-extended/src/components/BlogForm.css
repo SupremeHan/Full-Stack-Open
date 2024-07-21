@@ -1,0 +1,13 @@
+.blog-wrapper {
+	margin-bottom: 20px;
+}
+
+.blog-form {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.blog-button {
+	width: 100px;
+}
