@@ -33,8 +33,10 @@ app.get('/bmi', (req, res) => {
 });
 
 app.post('/exercises', (req, res) => {
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 	const { daily_exercises, target } = req.body;
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
 	if (!daily_exercises.length || isNaN(target)) {
 		return res.status(400).json({
 			error: 'parameters missing'

@@ -66,7 +66,11 @@ blogListRouter.put('/:id', async (request, response) => {
 	};
 
 	try {
-		const updateBlog = await BlogList.findByIdAndUpdate(request.params.id, blog, { new: true });
+		const updateBlog = await BlogList.findByIdAndUpdate(request.params.id, blog, { new: true }).populate('user', {
+			name: 1,
+			username: 1,
+			_id: 1
+		});
 		response.json(updateBlog);
 	} catch (error) {
 		response.status(400);
